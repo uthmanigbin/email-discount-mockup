@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Discount Code Generator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Discount Code Mockup</h1>
+    <button id="generateBtn">Generate 25% Off Code</button>
+    
+    <div class="input-group">
+      <input type="text" id="discountInput" placeholder="Enter discount code">
+      <button id="applyBtn">Apply Code</button>
+    </div>
+    
+    <div id="message" class="message"></div>
+  </div>
+
+  <script>
+    document.getElementById('generateBtn').addEventListener('click', async () => {
+      try {
+        const response = await fetch('/.netlify/functions/generate-code', {
+          method: 'POST'
+        });
+        const data = await response.json();
+        
+        if (response.ok) {
+          // Open email in new tab with code data
+          const emailWindow = window.open('email_1.html', '_blank');
+          
+          // Wait for window to load then pass data
+          setTimeout(() => {
+            emailWindow.postMessage({
+              code: data.code,
+              expiry: data.expiry,
+              type: 'DISCOUNT_CODE'
+            }, '*');
+          }, 500);
+          
+          showMessage("Check your new tab for the discount email!", "success");
+        } else {
+          showMessage(data.error || "Failed to generate code", "error");
+        }
+      } catch (error) {
+        showMessage("Network error - please try again", "error");
+      }
+    });
+
+    document.getElementById('applyBtn').addEventListener('click', async () => {
+      const code = document.getElementById('discountInput').value.trim();
+      if (!code) return;
+      
+      try {
+        const response = await fetch('/.netlify/functions/validate-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code })
+        });
+        const result = await response.json();
+        
+        showMessage(result.message, result.valid ? "success" : "error");
+      } catch (error) {
+        showMessage("Validation error", "error");
+      }
+    });
+
+    function showMessage(text, type) {
+      const msgEl = document.getElementById('message');
+      msgEl.textContent = text;
+      msgEl.className = `message ${type}`;
+    }
+  </script>
+</body>
+</html>

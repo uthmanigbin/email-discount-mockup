@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Special Discount</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="email-container">
+    <h1>Your Exclusive 25% Off!</h1>
+    <p>Here's your special discount code:</p>
+    
+    <div id="codeDisplay" class="discount-code">Loading...</div>
+    
+    <p>Use this code at checkout to get your discount.</p>
+    <p>Offer expires in:</p>
+    
+    <div id="countdown" class="countdown">01:00</div>
+    
+    <div id="expiredMessage" class="expired-message">
+      Time over ☹️ code invalid
+    </div>
+  </div>
+
+  <script>
+    window.addEventListener('message', (event) => {
+      if (event.data.type === 'DISCOUNT_CODE') {
+        document.getElementById('codeDisplay').textContent = event.data.code;
+        startCountdown(new Date(event.data.expiry));
+      }
+    });
+
+    function startCountdown(expiryDate) {
+      const expiredMsg = document.getElementById('expiredMessage');
+      const countdownEl = document.getElementById('countdown');
+      expiredMsg.style.display = 'none';
+      
+      function update() {
+        const now = new Date();
+        const diff = expiryDate - now;
+        
+        if (diff <= 0) {
+          countdownEl.style.display = 'none';
+          expiredMsg.style.display = 'block';
+          return;
+        }
+        
+        const mins = Math.floor(diff / 60000);
+        const secs = Math.floor((diff % 60000) / 1000);
+        countdownEl.textContent = 
+          `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        
+        setTimeout(update, 1000);
+      }
+      
+      update();
+    }
+  </script>
+</body>
+</html>
