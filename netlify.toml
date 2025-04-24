@@ -5,5 +5,5 @@
 
 [dev]
   framework = "#static"
-  targetPort = 3000
+  targetPort = 8888
   autoLaunch = true
